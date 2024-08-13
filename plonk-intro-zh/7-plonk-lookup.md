@@ -134,20 +134,20 @@ $$
 
 然后我们再看看论文 GW20 给出的方案 —— Plookup。与 Halo2-lookup 相比，Plookup 可以省去 $\vec{t}'$ 向量。
 
-重申一下 Plookup 证明的场景：Verifier 已知表格 $\vec{t}$ 向量，Prover 拥有一个秘密的查询向量 $\vec{f}$，Prover 要证明 $\vec{f}$ 中的每一个元素都在 $\vec{t}$ 中，即 $\{f_i\}\subseteq_{set} \{t_i\}$。
+重申一下 Plookup 证明的场景：Verifier 已知表格 $\vec{t}$ 向量，Prover 拥有一个秘密的查询向量 $\vec{f}$，Prover 要证明 $\vec{f}$ 中的每一个元素都在 $\vec{t}$ 中，即 $\{f_i\} \subseteq_{set} \{t_i\}$。假设表格 $\vec{t}$ 的长度为 $N$，为了简化，我们假设 $\vec{f}$ 的长度也是 $N$。
 
 方案 Plookup 只需要引入一个辅助向量  $\vec{s}$ ，它被定义为 $\{f_i\}\cup\{t_i\}$  上的重排，且向量元素的排列遵照 $\vec{t}$ 中各个元素出现的顺序。
 
-举例说明，假设 $N=4$，如果 $\vec{t}=(1,2,3,4)$， $\vec{f}=(3,2,2,1)$，那么 $\vec{s}=(1,1,2,2,2,3,3,4)$。可以看到，和 Halo2-lookup 中的 $\vec{f}'$一样， $\vec{s}$ 中相等的元素被排在了一起。
+举例说明，$N=4$， 如果 $\vec{t}=(1,2,3,4)$， $\vec{f}=(3,2,2,1)$，那么 $\vec{s}=(1,1,2,2,2,3,3,4)$。可以看到，和 Halo2-lookup 中的 $\vec{f}'$一样， $\vec{s}$ 中相等的元素被排在了一起。
 
-如果向量 $\vec{s}$ 满足 $\{s_i\}\subseteq_{set}\{t_i\}$，并且 $\{f_i\}\cup\{t_i\}=\_{multiset} \{s_i\}$，那么就可以证明 $\{f_i\}\subseteq_{set} \{t_i\}$。
+如果向量 $\vec{s}$ 满足 $\{s_i\}_{i\in[2N]} \subseteq_{set} \{t_i\}_{i\in[N]}$，并且 $\{f_i\}_{i\in[N]} \cup\{t_i\}_{i\in[N]}=_{multiset} \{s_i\}_{i\in[2N]}$，那么就可以证明 $\{f_i\}\subseteq_{set} \{t_i\}$。
 
-第一个关键点是因为 $\vec{f}$ 中的查询记录是任意的，查询顺序并没有遵守 $\vec{t}$ 中的元素顺序。而通过辅助向量 $\vec{s}$ ，我们就可以把 $\vec{f}$ 的查询记录进行重新排序，这有利于排查 $\vec{f}$ 中元素的合法性，确保每一个 $f_i$ 都出现在 $\vec{t}$ 中。但如何保证由 Prover 构造的 $\vec{s}$ 是按照 $\vec{t}$ 的元素顺序进行排序的？Plookup 用了一个直接但巧妙的方法，考虑把 $\vec{s}$ 中的每一个元素和他相邻下一个元素绑在一起，然后可以构成一个新的 Multiset；同样，我们把 $\vec{t}$ 中的每一个元素与相邻下一个元素组成一个元组，并构成一个 Multiset；我们还要把 $\vec{f}$ 中的每一个元素和它自身构成一个二元组 Multiset。我们用 $S=\{(s_i, s_{i+1})\}$ ， $T=\{(t_i, t_{i+1})\}$ ， $F=\{(f_i,f_i)\}$ 来表示这三个新的 Multiset，并证明它们满足一定的关系，从而保证 $\vec{s}$ 排序的正确性。
+第一个关键点是因为 $\vec{f}$ 中的查询记录是任意的，查询顺序并没有遵守 $\vec{t}$ 中的元素顺序。而通过辅助向量 $\vec{s}$ ，我们就可以把 $\vec{f}$ 的查询记录进行重新排序，这有利于排查 $\vec{f}$ 中元素的合法性，确保每一个 $f_i$ 都出现在 $\vec{t}$ 中。但如何保证由 Prover 构造的 $\vec{s}$ 是按照 $\vec{t}$ 的元素顺序进行排序的？Plookup 用了一个直接但巧妙的方法，考虑把 $\vec{s}$ 中的每一个元素和他相邻下一个元素绑在一起，然后可以构成一个新的 Multiset；同样，我们把 $\vec{t}$ 中的每一个元素与相邻下一个元素组成一个元组，并构成一个 Multiset；我们还要把 $\vec{f}$ 中的每一个元素和它自身构成一个二元组 Multiset。我们用 $S=\{(s_i, s_{i+1})\}_{i\in[2N-1]}$ ， $T=\{(t_i, t_{i+1})\}_{i\in[N-1]}$ ， $F=\{(f_i,f_i)\}_{i\in[N]}$ 来表示这三个新的 Multiset，并证明它们满足一定的关系，从而保证 $\vec{s}$ 排序的正确性。
 
 $$
 \begin{array}{ccccc}
 S &  & T  & & F \\
-\{(s_i, s\_{i+1})\} & =_{multiset} & \{(t_i, t\_{i+1})\} &\cup&\{(f_i,f_i)\}\\
+\{(s_i, s\_{i+1})\}_{i\in [2N-1]} & =_{multiset} & \{(t_i, t\_{i+1})\}_{i\in [N-1]} &\cup&\{(f_i,f_i)\}_{i\in [N]}\\
 \end{array}
 $$
 
@@ -171,7 +171,7 @@ $$
 
 更形式化一些，我们可以用数学归纳法推导：先从 $\vec{f}$ 为空开始推理， $F_0=\emptyset$ 。这样我们只要检查 $S_0=\{(s_i, s_{i+1})\}$ 和 $T=\{(t_i, t_{i+1})\}$ 满足 Multiset 意义上的相等，就可以满足 $S_0=_{multiset}T\cup F_0$，且 $\{f_i\}\subseteq\{t_i\}$。
 
-现在看归纳步，假设 $S_k=\_{multiset}T\cup F_{k}$，如果我们在 $\vec{f}$ 中添加一个新元素 $f_{k+1}$ ，且 $f_{k+1}=t_l$，那么在 $S_{k+1}$ 中会比 $S_k$ 额外多一个元素 $(f_{k+1},f_{k+1})$。因为 $f_{k+1}\in\{t_i\}$ ，那么重排向量  $\vec{s}\_{k+1}$ 中一定包含了相邻的两个 $t\_{k+1}$，其中一个来自 $t_l$，另一个来自于 $f_{k+1}$。因此，我们可以得出结论： $S_{k+1}=T\cup F_k\cup\{(t_k,t_k)\}$。
+现在看归纳步，假设 $S_k =\_{multiset} T\cup F_{k}$，如果我们在 $\vec{f}$ 中添加一个新元素 $f_{k+1}$ ，且 $f_{k+1}=t_l$，那么在 $S_{k+1}$ 中会比 $S_k$ 额外多一个元素 $(f_{k+1},f_{k+1})$。因为 $f_{k+1}\in\{t_i\}$ ，那么重排向量  $\vec{s}\_{k+1}$ 中一定包含了相邻的两个 $t\_{k+1}$，其中一个来自 $t_l$，另一个来自于 $f_{k+1}$。因此，我们可以得出结论： $S_{k+1}=T\cup F_k\cup\{(t_k,t_k)\}$。
 
 另一种情况， 假设 $S_k=\_{multiset}T\cup F_{k}$，如果我们在 $\vec{f}$ 添加的新元素 $f_{k+1}\not\in \vec{t}$，即是一条违法查询，假设为 $u$。那么 $\vec{s}$ 中存在与 $u$ 相邻的两个元素， $s_{l-1}, s_{l+1}$ ，即 $\vec{s}=(\ldots, s_{l-1}, u, s_{l+1},\ldots)$。它们构成了 $S$ 中的两个异类元素 $(s_{l-1}, u),(u,s_{l+1})$，导致 $S_{k+1}\neq T\cup F_k\cup\{(u,u)\}$。
 
@@ -180,20 +180,20 @@ $$
 首先 Prover 借助 Verifier 提供的挑战数 $\beta$，把 $S,T,F$ 中的每一个二元组元素进行「折叠」，转换成单值。这样新约束等式为：
 
 $$
-\{s_i + \beta s_{i+1}\}=\{t_i + \beta t_{i+1}\}\cup\{(1+\beta)f_i\}
+\{s_i + \beta s_{i+1}\}_{i\in [2N-1]}=\{t_i + \beta t_{i+1}\}_{i\in [N-1]}\cup\{(1+\beta)f_i\}_{i\in [N]}
 $$
 
 然后 Prover 再借助 Verifier 提供的一个挑战数 $\gamma$，把上面的 Multiset Equality Argument 归结到 Grand Product Argument：
 
 $$
 \begin{split}
-&\prod_i{((1+\beta)f_i+\gamma)(t_i+\beta\cdot t_{i+1}+\gamma)} \\
-=&\prod_i
+&\prod_i^{N}{((1+\beta)f_i+\gamma)\prod_i^{N-1}(t_i+\beta\cdot t_{i+1}+\gamma)} \\
+=&\prod_i^{2N-1}
 {(s_i+\beta\cdot s_{i+1}+\gamma)}
 \end{split}
 $$
 
-不过这里请注意的是，在 Plookup 论文方案中，并没有采用上面的证明转换形式。而是调换了 $\beta$ 和 $\gamma$ 的使用顺序：
+不过这里请注意的是，在 Plookup 论文方案中，并没有采用上面的证明转换形式，而是调换了 $\beta$ 和 $\gamma$ 的使用顺序。这是为了更直观地把 $(1+\beta)$ 提取出来，以证明以上我们讨论的，相邻元素组成的Multisets可以保证 $\vec{s}$ 排序的正确性：
 
 $$
 \{(s_i+\gamma) + \beta (s_{i+1}+\gamma)\}=\{(t_i + \gamma) + \beta (t_{i+1}+\gamma)\}\cup\{(f_i+\gamma)+ \beta(f_i+\gamma)\}
@@ -203,15 +203,15 @@ $$
 
 $$
 \begin{split}
-&\prod_i{(1+\beta)(f_i+\gamma)(t_i+\beta\cdot t_{i+1}+(1+\beta)\gamma)} \\
-=&\prod_i
+&\prod_i^N{(1+\beta)(f_i+\gamma)\prod_i^{N-1}(t_i+\beta\cdot t_{i+1}+(1+\beta)\gamma)} \\
+=&\prod_i^{2N-1}
 {(s_i+\beta\cdot s_{i+1}+(1+\beta)\gamma)}
 \end{split}
 $$
 
 注：个人认为，上述两种证明转换形式没有本质上的区别。为了方便理解论文，我们后文遵从 Plookup 原论文的方式。
 
-接下来，我们要对向量进行多项式编码，但是这里会遇到一个新问题。即 $\vec{s}$ 多项式的次数会超出 $\vec{f}$ 的次数或 $\vec{t}$ 的次数，特别当 $\vec{f}$ 或 $\vec{t}$ 的长度接近或者等于 $H$ 的大小， $\vec{s}$  的次数可能超出 $H$ 的大小。Plookup 的解决方式是将 $\vec{s}$ 拆成两半， $\vec{s}^{lo}$ 与 $\vec{s}^{hi}$，但是 $\vec{s}^{lo}$ 的最后一个元素要等于 $\vec{s}^{hi}$ 的第一个元素：
+接下来，我们要对向量进行多项式编码，但是这里会遇到一个新问题： $\vec{s}$ 多项式的次数会超出 $\vec{f}$ 的次数或 $\vec{t}$ 的次数。特别地，当 $\vec{f}$ 或 $\vec{t}$ 的长度接近或者等于 $H$ 的大小， $\vec{s}$  的次数可能超出 $H$ 的大小。Plookup 的解决方式是将 $\vec{s}$ 拆成长度相等的两半， $\vec{s}^{lo}$ 与 $\vec{s}^{hi}$，但是 $\vec{s}^{lo}$ 的最后一个元素要等于 $\vec{s}^{hi}$ 的第一个元素：
 
 $$
 \vec{s}^{lo}_{N-1} = \vec{s}^{hi}_0
@@ -219,7 +219,7 @@ $$
 
 这样做的目的是，确保能在两个向量中描述 $\vec{s}$ 中相邻两个元素的绑定关系。比如 $\vec{s}=(1,2,2,3,4,4,4)$，那么 $\vec{s}^{lo}=(1,2,2,\underline{3})$ ，而 $\vec{s}^{hi}=(\underline{3},4,4,4)$ ，可以看出他们头尾相接。
 
-这样一来， $\vec{s}$ 的长度最长也只能是 $2N-1$，但如果  $\vec{f}$ 与 $\vec{t}$ 要按照 $2^k$ 对齐，那么 $\vec{s}$ 的长度就不够了（无法在长度为 $N$ 的乘法子群上编码成多项式）。为了解决这个问题，Plookup 选择把 $\vec{f}$ 的有效长度限制在 $N-1$，所谓有效长度是指， $\vec{f}$ 的实际长度为 $N$，但是其最后一条查询记录并不考虑其合法性。
+这样一来， $\vec{s}$ 的长度最长也只能是 $2N-1$，而不是原先我们期望的$2N$，因为首尾相接消耗了一个位置。但如果  $\vec{f}$ 与 $\vec{t}$ 要按照 $2^k$ 对齐，那么 $\vec{s}$ 的长度就不够了（无法在长度为 $N$ 的乘法子群上编码成多项式）。为了解决这个问题，Plookup 选择把 $\vec{f}$ 的有效长度限制在 $N-1$，所谓有效长度是指， $\vec{f}$ 的实际长度为 $N$，但是其最后一条查询记录并不考虑其合法性。
 
 于是 $\vec{s}$ 向量可以拆成两个长度为 $N$ 的向量，其中一半 $\vec{s}^{lo}=(s_0,s_1,\ldots,s_{N-1})$，另一半 $\vec{s}^{hi}=(s_{N-1}, s_N,\ldots, s_{2N-2})$ 
 
@@ -262,11 +262,12 @@ $$
 
 $$
 \begin{split}
-L_0(X)\cdot(z(X)-1) & = 0 \\
-L_{N-1}(X)\cdot(s^{lo}(X)-s^{hi}(\omega\cdot X)) & = 0 \\
-L_{N-1}(X)\cdot(z(X)-1) & = 0\\
+L_0(X)\cdot(z(X)-1) & = 0, \\
+L_{N-1}(X)\cdot(s^{lo}(X)-s^{hi}(\omega\cdot X)) & = 0, \\
+L_{N-1}(X)\cdot(z(X)-1) & = 0,\\
 \end{split}
 $$
+第二个等式在约束$s^{lo}$的最后一项与$s^{hi}$的第一项相等，因为当 $X=\omega^{N-1}$ 时，$s^{hi}(\omega \cdot X) = s^{hi}(\omega^{N}) = s^{hi}(1)$。
 
 此外，根据 $\vec{z}$ 的递推关系， $z(X)$ 还要满足下面的约束：
 
@@ -279,10 +280,10 @@ $$
 $$
 
 总共有四条多项式约束，这里略去完整的协议。
-
+ 
 ## Plonkup 的优化
 
-在 Plonkup 论文中给出了一个简化方法，可以去除一个多项式约束。在 Plookup 方案中， $\vec{s}$  向量被拆分成两个向量， $\vec{s}^{lo}$ 与 $\vec{s}^{hi}$ ，但要要求这两个向量头尾相接。
+在 Plookup 方案中， $\vec{s}$  向量被拆分成两个向量， $\vec{s}^{lo}$ 与 $\vec{s}^{hi}$ ，但要要求这两个向量头尾相接。在 Plonkup 论文中给出了一个简化方法，可以去除这个多项式约束。
 
 Plonkup 给出了一种新的拆分方案，即按照 $\vec{s}$ 的奇偶项进行拆分，拆成 $\vec{s}^{even}$ 与 $\vec{s}^{odd}$：
 
@@ -336,7 +337,6 @@ $$
 这里辅助函数 $G(a,b)=a+\beta\cdot b+\gamma\cdot(1+\beta)$。
 
 于是多项式 $z(X)$ 只需要满足如下两条约束：
-
 $$
 \begin{split}
 L_0(X)(z(X)-1)=0 \\
@@ -344,7 +344,6 @@ L_0(X)(z(X)-1)=0 \\
 $$
 
 还有
-
 $$
 \begin{split}
 &\frac{z(\omega\cdot X)}{z(X)}=\frac{(1+\beta)(f(X)+\gamma)(t(X)+\beta\cdot t(\omega\cdot X)+\gamma(1+\beta))}
@@ -377,11 +376,13 @@ $$
 
 由于计算表格 $\vec{t}$ 是一个预定义的多列表格，因此它可以在 Preprocessing 阶段进行承诺计算，并把这些表格的承诺作为后续协议交互的公开输入。
 
-在 Plonk 协议中，因为我们把表格的查询视为一种特殊的门，因此查询记录 $\vec{f}$ 本质上正是 $(\vec{w}\_{a},\vec{w}\_{b},\vec{w}\_{c})$ 的折叠。为了区分「查询门」和「算术门」，我们还需要增加一个选择向量 $q_{K}$，标记 Witness table 中的某一行是算术门，还是查询门。
+在 Plonk 协议中，因为我们把表格的查询视为一种特殊的门，因此查询记录 $\vec{f}$ 本质上正是 $(\vec{w}_{a},\vec{w}_{b},\vec{w}_{c})$ 的折叠。因此，一个电路自然可以同时应用lookup gates和算术门。
+
+为了区分「查询门」和「算术门」，我们还需要增加一个选择器向量 $q_{K}$，标记 Witness table 中的某一行是算术门（$q_K=0$），还是查询门($q_K=1$)。当某个位置的gate是查询门时，$q_K$在此位置为1，那么对应在这个位置，算术门的选择器向量 $q_L$， $q_R$， $q_O$， $q_M$， $q_C$都为0。$q_K$ 作为电路的描述之一，也在预处理阶段被写成多项式，放在了承诺里。
 
 下面我们按照 Plonkup 论文中的协议，大概描述下如何将 Lookup Argument 整合进 Plonk 协议。
 
-**预处理**：Prover 和 Verifier 构造 $[q_L(X)]$， $[q_R(X)]$， $[q_O(X)]$， $[q_M(X)]$， $[q_C(X)]$，  $\color{blue}{[q_K(X)]}$， $[{\sigma_a}(X)]$， $[{\sigma_b}(X)]$， $[{\sigma_c}(X)]$， $\color{blue}{[t_1(X)]}$， $\color{blue}{[t_2(X)]}$， $\color{blue}{[t_3(X)]}$
+**预处理**：Prover 和 Verifier 构造 $[q_L(X)]$， $[q_R(X)]$， $[q_O(X)]$， $[q_M(X)]$， $[q_C(X)]$，  $\color{blue}{[q_K(X)]}$， $[{\sigma_a}(X)]$， $[{\sigma_b}(X)]$， $[{\sigma_c}(X)]$， $\color{blue}{[t_1(X)]}$， $\color{blue}{[t_2(X)]}$， $\color{blue}{[t_3(X)]}$。
 
 第一步：Prover 针对 $W$ 表格的每一列，构造 $[w_a(X)]$， $[w_b(X)]$， $[w_c(X)]$， $\phi(X)$ 使得
 
@@ -389,7 +390,7 @@ $$
 q_L(X)w_a(X)+q_R(X)w_b(X)+ q_M(X)w_a(X)w_b(X) - q_O(X)w_c(X)+q_C(X) + \phi(X) = 0
 $$
 
-第二步：Verifier 发送随机数 $\eta$，用以折叠表格
+第二步：Verifier 发送随机数 $\eta$，用以折叠表格。
 
 第三步：Prover 构造并发送 $\color{blue}{[f(X)]}$ 与  $\color{blue}{[t(X)]}$ ，分别编码 $\vec{f}$ 与 $\vec{t}=\vec{t}_1+\eta\cdot\vec{t}_2+\eta^2\cdot\vec{t}_3$，其中 $\vec{f}$ 计算如下
 
@@ -414,9 +415,7 @@ L_0(X)(z(X)-1) &= 0 \\
 z(\omega\cdot X)g_2(X) -  z(X)g_1(X) &=0
 \end{split}
 $$
-
 其中
-
 $$
 \begin{split}
 g_1(X)&=\Big(w_a(X)+\beta_1\cdot {id_a}(X)+\gamma_1\Big)\Big(w_b(X)+\beta_1\cdot {id_b}(X)+\gamma_1\Big)\Big(w_c(X)+\beta_1\cdot {id_c}(X)+\gamma_1\Big)\\
